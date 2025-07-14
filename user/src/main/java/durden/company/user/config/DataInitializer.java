@@ -17,11 +17,11 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
         Role roleAdmin = new Role();
-        roleAdmin.setTitle("admin");
+        roleAdmin.setTitle("Admin");
         roleRepository.save(roleAdmin);
 
         Role roleUser = new Role();
-        roleUser.setTitle("user");
+        roleUser.setTitle("User");
         roleRepository.save(roleUser);
     }
 
