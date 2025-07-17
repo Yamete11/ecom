@@ -1,6 +1,11 @@
 package com.example.ecom.controllers;
 
+import com.example.ecom.DTOs.AddToCartEventDTO;
+import com.example.ecom.DTOs.AddToCartRequestDTO;
+import com.example.ecom.DTOs.ProductDTO;
 import com.example.ecom.entities.Product;
+import com.example.ecom.kafka.CartKafkaProducer;
+import com.example.ecom.services.CartIntegrationService;
 import com.example.ecom.services.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,20 +19,22 @@ import java.util.Optional;
 @RequestMapping("/products")
 public class ProductController {
 
-    private ProductService productService;
+    private final CartIntegrationService cartIntegrationService;
+    private final ProductService productService;
 
     @Autowired
-    public ProductController(ProductService productService) {
+    public ProductController(ProductService productService, CartIntegrationService cartIntegrationService) {
         this.productService = productService;
+        this.cartIntegrationService = cartIntegrationService;
     }
 
     @GetMapping
-    public ResponseEntity<List<Product>> findAllProducts() {
+    public ResponseEntity<List<ProductDTO>> findAllProducts() {
         return new ResponseEntity<>(productService.findAll(),  HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable long id) {
+    public ResponseEntity<ProductDTO> getProductById(@PathVariable long id) {
         return new ResponseEntity<>(productService.getProductById(id),  HttpStatus.OK);
     }
 
@@ -48,5 +55,11 @@ public class ProductController {
     public ResponseEntity<Void> deleteProduct(@PathVariable long id) {
         productService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping("/{id}/add-to-cart")
+    public ResponseEntity<String> addToCart(@PathVariable Long id, @RequestBody AddToCartRequestDTO request) {
+        cartIntegrationService.addProductToCart(request.getUserId(), id, request.getQuantity());
+        return ResponseEntity.ok("Product sent to cart");
     }
 }

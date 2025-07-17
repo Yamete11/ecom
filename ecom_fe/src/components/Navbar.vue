@@ -7,7 +7,8 @@ import { RouterLink } from 'vue-router'
     <RouterLink to="/" class="logo">durden</RouterLink>
 
     <nav class="nav-links">
-      <input type="text" placeholder="Search..." class="search" />
+      <RouterLink to="/products" class="nav-link">Products</RouterLink>
+      <RouterLink to="/orders" class="nav-link">Orders</RouterLink>
       <RouterLink to="/cart" class="nav-link">Cart</RouterLink>
       <RouterLink to="/profile" class="nav-link">Profile</RouterLink>
       <RouterLink to="/settings" class="nav-link">Settings</RouterLink>

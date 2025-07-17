@@ -1,8 +1,10 @@
 package com.example.ecom.services;
 
+import com.example.ecom.DTOs.ProductDTO;
 import com.example.ecom.entities.Category;
 import com.example.ecom.entities.Product;
 import com.example.ecom.exceptions.ProductNotFoundException;
+import com.example.ecom.mappers.ProductMapper;
 import com.example.ecom.repositories.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,14 +22,14 @@ public class ProductService {
         this.productRepository = productRepository;
     }
 
-    public Product getProductById(long id) {
-        return productRepository.findById(id)
-                .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + id));
+    public ProductDTO getProductById(long id) {
+        return ProductMapper.toDTO(productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + id)));
     }
 
 
-    public List<Product> findAll() {
-        return productRepository.findAll();
+    public List<ProductDTO> findAll() {
+        return ProductMapper.toDTOList(productRepository.findAll());
     }
 
     public Product save(Product product) {

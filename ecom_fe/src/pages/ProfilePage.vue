@@ -25,6 +25,11 @@ const password = ref('')
         <input type="password" v-model="password" />
       </label>
 
+      <label>
+        Role:
+        <label></label>
+      </label>
+
       <button type="submit">Save</button>
     </form>
   </div>
@@ -32,9 +37,8 @@ const password = ref('')
 
 <style scoped>
 .profile-container {
-  max-width: 500px;
+  width: 1000px;
   margin: 0 auto;
-  background-color: #1e1e1e;
   padding: 2rem;
   border-radius: 8px;
   height: 100%;

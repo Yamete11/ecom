@@ -1,8 +1,9 @@
 <script setup lang="ts">
 
 </script>
+
 <template>
-  <h1>I am CartPage</h1>
+  <h1>I am OrderPage</h1>
 </template>
 
 <style scoped>
