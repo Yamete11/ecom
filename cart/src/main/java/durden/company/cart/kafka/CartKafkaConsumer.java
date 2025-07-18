@@ -22,8 +22,8 @@ public class CartKafkaConsumer {
     }
 
     @KafkaListener(topics = "${kafka.topics.cart-add}", groupId = "cart-group", containerFactory = "kafkaListenerContainerFactory")
-    public void consumeAddToCartEvent(ConsumerRecord<String, AddToCartEventDTO> record) {
-        AddToCartEventDTO event = record.value();
+    public void consumeAddToCartEvent(AddToCartEventDTO event) {
         cartService.addToCart(event);
     }
+
 }

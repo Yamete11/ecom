@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import api from '../api/axios'
 import ProductList from '../components/ProductList.vue'
@@ -9,6 +9,7 @@ const searchQuery = ref('')
 const loadProducts = async () => {
   const response = await api.get('/products')
   products.value = response.data
+  console.log(products)
 }
 
 onMounted(async () => {

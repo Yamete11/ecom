@@ -27,6 +27,10 @@ public class ProductService {
                 .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + id)));
     }
 
+    public List<ProductDTO> getProductsByIds(List<Long> ids) {
+        return ProductMapper.toDTOList(productRepository.findAllById(ids));
+    }
+
 
     public List<ProductDTO> findAll() {
         return ProductMapper.toDTOList(productRepository.findAll());

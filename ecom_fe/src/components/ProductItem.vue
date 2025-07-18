@@ -1,20 +1,60 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import api from '../api/axios'
+
+
+interface Product {
+  id: number
+  title: string
+  price: number
+  category: string
+}
+
+const props = defineProps<{
+  product: Product
+}>()
+
+const isAdding = ref(false)
+
+async function addToCart() {
+  if (isAdding.value) return
+  isAdding.value = true
+
+  try {
+    const response = await fetch('http://localhost:8080/products/add-to-cart', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId: 1,
+        productId: props.product.id,
+        quantity: 1
+      }),
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to add to cart')
+    }
+
+  } catch (error) {
+    console.error(error)
+    alert('Error adding product to cart')
+  } finally {
+    isAdding.value = false
+  }
+}
+</script>
+
 <template>
   <div class="product-item">
+    <h3>{{ product.id }}</h3>
     <h3>{{ product.title }}</h3>
     <h3>{{ product.price }} $</h3>
     <h3>{{ product.category }}</h3>
-    <button>Add to cart</button>
+    <button @click="addToCart">Add to cart</button>
   </div>
 </template>
-
-<script setup>
-defineProps({
-  product: {
-    type: Object,
-    required: true
-  }
-})
-</script>
 
 <style scoped>
 .product-item {

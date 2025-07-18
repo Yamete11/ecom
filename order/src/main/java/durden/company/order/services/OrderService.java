@@ -1,13 +1,14 @@
 package durden.company.order.services;
 
-import durden.company.order.DTOs.CreateOrderRequestDTO;
-import durden.company.order.DTOs.OrderDTO;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import durden.company.order.DTOs.CreateOrderDTO;
 import durden.company.order.entities.Order;
 import durden.company.order.entities.OrderItem;
 import durden.company.order.entities.OrderStatus;
+import durden.company.order.events.OrderCreatedEvent;
 import durden.company.order.mappers.OrderMapper;
 import durden.company.order.repositories.OrderRepository;
-import durden.company.order.shared.events.OrderCreatedEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -26,72 +27,65 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderStatusService orderStatusService;
     private final OrderItemService orderItemService;
-    private final KafkaTemplate<String, OrderCreatedEvent> kafkaTemplate;
+    private final ObjectMapper objectMapper;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+
 
     @Autowired
-    public OrderService(OrderRepository orderRepository, OrderStatusService orderStatusService, OrderItemService orderItemService, KafkaTemplate<String, OrderCreatedEvent> kafkaTemplate) {
+    public OrderService(OrderRepository orderRepository, OrderStatusService orderStatusService, OrderItemService orderItemService, ObjectMapper objectMapper, KafkaTemplate<String, String> kafkaTemplate) {
         this.orderRepository = orderRepository;
         this.orderStatusService = orderStatusService;
         this.orderItemService = orderItemService;
+        this.objectMapper = objectMapper;
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public List<OrderDTO> findAll() {
+    public List<CreateOrderDTO> findAll() {
         return orderRepository.findAll().stream()
                 .map(OrderMapper::toDTO)
                 .toList();
     }
 
-    public Optional<OrderDTO> findOrder(long id) {
+    public Optional<CreateOrderDTO> findOrder(long id) {
         return orderRepository.findById(id)
                 .map(OrderMapper::toDTO);
     }
 
-    public OrderDTO createOrder(CreateOrderRequestDTO orderDTO) {
-        Order order = new Order();
-        order.setUserId(orderDTO.getUserId());
-        order.setCreatedAt(LocalDateTime.now());
-
-        OrderStatus orderStatus = orderStatusService.findOrderStatusById(1L);
-        order.setOrderStatus(orderStatus);
-
-        BigDecimal totalPrice = BigDecimal.ZERO;
-        List<OrderItem> list = new ArrayList<>();
-
-        for (CreateOrderRequestDTO.CreateOrderItem itemDTO : orderDTO.getItems()) {
-            OrderItem item = new OrderItem();
-            item.setOrder(order);
-            item.setProductId(itemDTO.getProductId());
-            item.setQuantity(itemDTO.getQuantity());
-            item.setPrice(itemDTO.getPrice());
-
-            BigDecimal lineTotal = itemDTO.getPrice().multiply(BigDecimal.valueOf(itemDTO.getQuantity()));
-            totalPrice = totalPrice.add(lineTotal);
-
-            list.add(item);
+    public CreateOrderDTO createOrder(CreateOrderDTO orderDTO) {
+        OrderStatus newStatus = orderStatusService.findOrderStatusByName("New");
+        if (newStatus == null) {
+            throw new RuntimeException("OrderStatus 'new' not found");
         }
 
-        order.setItems(list);
-        order.setTotalPrice(totalPrice);
+        Order order = new Order();
+        order.setUserId(orderDTO.getUserId());
+        order.setTotalPrice(orderDTO.getTotalPrice());
+        order.setCreatedAt(LocalDateTime.now());
+        order.setOrderStatus(newStatus);
+
+        for (var itemDto : orderDTO.getItems()) {
+            OrderItem item = new OrderItem();
+            item.setProductId(itemDto.getProductId());
+            item.setQuantity(itemDto.getQuantity());
+            item.setPrice(itemDto.getPrice());
+            item.setOrder(order);
+            order.getItems().add(item);
+        }
 
         Order savedOrder = orderRepository.save(order);
 
-        OrderCreatedEvent event = new OrderCreatedEvent(
-                savedOrder.getId(),
-                savedOrder.getUserId(),
-                savedOrder.getTotalPrice(),
-                savedOrder.getCreatedAt(),
-                savedOrder.getItems().stream()
-                        .map(i -> new OrderCreatedEvent.OrderItemEvent(
-                                i.getProductId(),
-                                i.getQuantity(),
-                                i.getPrice()))
-                        .toList()
-        );
+        var event = new OrderCreatedEvent(savedOrder.getId(), savedOrder.getUserId(),
+                savedOrder.getTotalPrice(), orderDTO.getPaymentMethod());
 
-        kafkaTemplate.send("order-created", event);
+        try {
+            String eventJson = objectMapper.writeValueAsString(event);
+            kafkaTemplate.send("order-created-topic", eventJson);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to serialize order created event", e);
+        }
 
-        return toDTO(savedOrder);
+        return OrderMapper.toDTO(savedOrder);
+
     }
 
 

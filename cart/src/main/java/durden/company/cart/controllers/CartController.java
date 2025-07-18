@@ -1,7 +1,6 @@
 package durden.company.cart.controllers;
 
 import durden.company.cart.DTOs.CartDTO;
-import durden.company.cart.entities.Cart;
 import durden.company.cart.services.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

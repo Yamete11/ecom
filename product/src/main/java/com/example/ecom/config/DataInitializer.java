@@ -11,11 +11,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 @Component
 public class DataInitializer implements CommandLineRunner {
 
-    @Autowired
-    private CategoryRepository categoryRepository;
+    private final CategoryRepository categoryRepository;
+
+    private final ProductRepository productRepository;
 
     @Autowired
-    private ProductRepository productRepository;
+    public DataInitializer(CategoryRepository categoryRepository, ProductRepository productRepository) {
+        this.categoryRepository = categoryRepository;
+        this.productRepository = productRepository;
+    }
 
     @Override
     public void run(String... args) throws Exception {

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { RouterLink } from 'vue-router'
 </script>
 
@@ -12,7 +12,7 @@ import { RouterLink } from 'vue-router'
       <RouterLink to="/cart" class="nav-link">Cart</RouterLink>
       <RouterLink to="/profile" class="nav-link">Profile</RouterLink>
       <RouterLink to="/settings" class="nav-link">Settings</RouterLink>
-      <RouterLink to="/logout" class="logout nav-link">Sign out</RouterLink>
+      <button class="logout nav-link">Sign out</button>
     </nav>
   </header>
 </template>

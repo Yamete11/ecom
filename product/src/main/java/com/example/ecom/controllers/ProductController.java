@@ -57,9 +57,15 @@ public class ProductController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PostMapping("/{id}/add-to-cart")
-    public ResponseEntity<String> addToCart(@PathVariable Long id, @RequestBody AddToCartRequestDTO request) {
-        cartIntegrationService.addProductToCart(request.getUserId(), id, request.getQuantity());
+    @PostMapping("/add-to-cart")
+    public ResponseEntity<String> addToCart(@RequestBody AddToCartRequestDTO request) {
+        cartIntegrationService.addProductToCart(request.getUserId(), request.getProductId(), request.getQuantity());
         return ResponseEntity.ok("Product sent to cart");
     }
+
+    @PostMapping("/batch")
+    public ResponseEntity<List<ProductDTO>> getProductsByIds(@RequestBody List<Long> ids) {
+        return ResponseEntity.ok(productService.getProductsByIds(ids));
+    }
+
 }

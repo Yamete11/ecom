@@ -6,6 +6,8 @@ import durden.company.cart.repositories.CartItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class CartItemService {
 
@@ -31,5 +33,13 @@ public class CartItemService {
                 });
 
         cartItemRepository.save(item);
+    }
+
+    public List<CartItem> findCartItemsByCartId(Long cartId) {
+        return cartItemRepository.findCartItemsByCartId(cartId);
+    }
+
+    public void deleteCartItem(Long cartItemId) {
+        cartItemRepository.deleteById(cartItemId);
     }
 }

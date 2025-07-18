@@ -10,6 +10,7 @@ public class ProductMapper {
 
     public static ProductDTO toDTO(Product product) {
         ProductDTO productDTO = new ProductDTO();
+        productDTO.setId(product.getId());
         productDTO.setTitle(product.getTitle());
         productDTO.setPrice(product.getPrice());
         productDTO.setCategory(product.getCategory().getTitle());

@@ -25,14 +25,14 @@ public class DataInitializer implements CommandLineRunner {
 
         OrderStatus statusPaid = new OrderStatus();
         statusPaid.setTitle("Paid");
-        orderStatusRepository.save(statusNew);
+        orderStatusRepository.save(statusPaid);
 
         OrderStatus statusShipped = new OrderStatus();
         statusShipped.setTitle("Shipped");
-        orderStatusRepository.save(statusNew);
+        orderStatusRepository.save(statusShipped);
 
         OrderStatus statusCancelled = new OrderStatus();
         statusCancelled.setTitle("Cancelled");
-        orderStatusRepository.save(statusNew);
+        orderStatusRepository.save(statusCancelled);
     }
 }

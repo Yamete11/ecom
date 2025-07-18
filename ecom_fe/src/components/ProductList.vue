@@ -1,17 +1,20 @@
-<script setup>
+<script setup lang="ts">
 import ProductItem from "@/components/ProductItem.vue";
 import { computed } from 'vue'
 
-const props = defineProps({
-  products: {
-    type: Array,
-    required: true,
-  },
-  searchQuery: {
-    type: String,
-    default: '',
-  }
-})
+interface Product {
+  id: number
+  title: string
+  price: number
+  category: string
+}
+
+const props = defineProps<{
+  products: Product[],
+  searchQuery: string
+}>()
+
+const searchQuery = props.searchQuery ?? ''
 
 const filteredProducts = computed(() => {
   return props.products.filter(p =>

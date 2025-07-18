@@ -5,7 +5,9 @@ import durden.company.payment.entites.PaymentStatus;
 import durden.company.payment.repositories.PaymentMethodRepository;
 import durden.company.payment.repositories.PaymentStatusRepository;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
 
+@Component
 public class DataInitializer implements CommandLineRunner {
 
     private final PaymentMethodRepository paymentMethodRepository;
