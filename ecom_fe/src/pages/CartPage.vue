@@ -31,7 +31,7 @@ async function loadPaymentMethods(){
     paymentMethods.value = response.data
     selectedMethod.value = paymentMethods.value[0]?.id ?? null
   } catch (error) {
-    console.error('Ошибка при загрузке методов оплаты:', error)
+    console.error('Error:', error)
   }
 }
 
@@ -49,13 +49,17 @@ async function removeProduct(productId: number) {
     await axios.delete(`http://localhost:8081/cart-items/${productId}`)
     cart.value.cartItems = cart.value.cartItems.filter(p => p.id !== productId)
   } catch (error) {
-    console.error('Ошибка при удалении товара из корзины:', error)
+    console.error('Error:', error)
   }
 }
 
 
-function pay() {
-  alert('Payment functionality coming soon!')
+async function pay() {
+  try{
+    await axios.post('http://localhost:8081/carts/checkout', {})
+  } catch (error){
+    console.log(error)
+  }
 }
 
 onMounted(async () =>{

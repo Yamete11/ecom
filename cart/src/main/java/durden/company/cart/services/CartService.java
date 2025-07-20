@@ -1,14 +1,17 @@
 package durden.company.cart.services;
 
 import durden.company.cart.DTOs.AddToCartEventDTO;
+import durden.company.cart.DTOs.CartCheckoutEventDTO;
 import durden.company.cart.DTOs.CartDTO;
 import durden.company.cart.DTOs.ProductDTO;
 import durden.company.cart.entities.Cart;
 import durden.company.cart.entities.CartItem;
+import durden.company.cart.kafka.CartKafkaProducer;
 import durden.company.cart.mappers.CartMapper;
 import durden.company.cart.repositories.CartRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -24,15 +27,17 @@ public class CartService {
     private final CartRepository cartRepository;
     private final CartItemService cartItemService;
     private final RestTemplate restTemplate;
+    private final CartKafkaProducer cartKafkaProducer;
 
     @Value("${product.service.url}")
     private String productServiceUrl;
 
     @Autowired
-    public CartService(CartRepository cartRepository, CartItemService cartItemService, RestTemplate  restTemplate) {
+    public CartService(CartRepository cartRepository, CartItemService cartItemService, RestTemplate  restTemplate, CartKafkaProducer cartKafkaProducer) {
         this.cartRepository = cartRepository;
         this.cartItemService = cartItemService;
         this.restTemplate = restTemplate;
+        this.cartKafkaProducer = cartKafkaProducer;
     }
 
     public CartDTO getOrCreateCartByUserId(Long userId) {
@@ -80,5 +85,9 @@ public class CartService {
         });
 
         cartItemService.addOrUpdateItem(cart, eventDTO.getProductId(), eventDTO.getQuantity());
+    }
+
+    public void checkoutCart(CartCheckoutEventDTO request) {
+        cartKafkaProducer.sendCartCheckoutEvent(request);
     }
 }

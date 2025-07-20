@@ -5,9 +5,10 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,42 +19,51 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @Component
-@RequiredArgsConstructor
-@Slf4j
-@AllArgsConstructor
 public class TokenFilter extends OncePerRequestFilter {
-    private JwtCore jwtCore;
-    private UserDetailsService userDetailsService;
 
+    private static final Logger logger = LoggerFactory.getLogger(TokenFilter.class);
+
+    private final JwtCore jwtCore;
+    private final UserDetailsService userDetailsService;
+
+    public TokenFilter(JwtCore jwtCore, @Lazy UserDetailsService userDetailsService) {
+        this.jwtCore = jwtCore;
+        this.userDetailsService = userDetailsService;
+    }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String jwt = null;
-        String username = null;
-        UserDetails userDetails = null;
-
-        UsernamePasswordAuthenticationToken auth = null;
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
         try {
             String headerAuth = request.getHeader("Authorization");
-            if(headerAuth != null && headerAuth.startsWith("Bearer ")){
-                jwt = headerAuth.substring(7);
-            }
-            if(jwt != null){
-                try {
-                    username = jwtCore.getNameFromJwt(jwt);
-                } catch (ExpiredJwtException e){
+            if (headerAuth != null && headerAuth.startsWith("Bearer ")) {
+                String jwt = headerAuth.substring(7);
+
+                if (jwtCore.validateToken(jwt)) {
+                    String username = jwtCore.getNameFromJwt(jwt);
+
+                    if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                                userDetails,
+                                null,
+                                userDetails.getAuthorities()
+                        );
+                        SecurityContextHolder.getContext().setAuthentication(auth);
+                    }
+                } else {
+                    logger.warn("Invalid JWT token");
                 }
-                if(username != null && SecurityContextHolder.getContext().getAuthentication() == null){
-                    userDetails = userDetailsService.loadUserByUsername(username);
-                    auth = new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null
-                    );
-                    SecurityContextHolder.getContext().setAuthentication(auth);
-                }
             }
-        } catch (Exception e ){
+        } catch (ExpiredJwtException e) {
+            logger.warn("JWT token is expired: {}", e.getMessage());
+        } catch (Exception e) {
+            logger.error("Cannot set user authentication: {}", e.getMessage(), e);
         }
+
         filterChain.doFilter(request, response);
     }
 }
+
+

@@ -17,8 +17,5 @@ public class WarehouseController {
         this.warehouseService = warehouseService;
     }
 
-    @GetMapping
-    public ResponseEntity<List<Warehouse>> getAllWarehouses() {
-        return ResponseEntity.ok(warehouseService.getAllWarehouses());
-    }
+
 }

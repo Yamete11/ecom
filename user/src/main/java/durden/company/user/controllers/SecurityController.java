@@ -1,12 +1,14 @@
 package durden.company.user.controllers;
 
 
+import durden.company.user.DTOs.JwtResponse;
 import durden.company.user.DTOs.SigninRequest;
 import durden.company.user.DTOs.SignupRequest;
 import durden.company.user.components.JwtCore;
 import durden.company.user.entities.User;
 import durden.company.user.exceptions.AppError;
 import durden.company.user.repositories.UserRepository;
+import durden.company.user.services.UserService;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,64 +29,48 @@ import java.util.logging.Logger;
 @RestController
 @RequestMapping("/auth")
 public class SecurityController {
-    private UserRepository userRepository;
-    private AuthenticationManager authenticationManager;
-    private JwtCore jwtCore;
-    private PasswordEncoder passwordEncoder;
+
+    private final UserService userService;
+    private final AuthenticationManager authenticationManager;
+    private final JwtCore jwtCore;
 
     @Autowired
-    public SecurityController(UserRepository userRepository, AuthenticationManager authenticationManager, JwtCore jwtCore, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
+    public SecurityController(UserService userService,
+                              AuthenticationManager authenticationManager,
+                              JwtCore jwtCore) {
+        this.userService = userService;
         this.authenticationManager = authenticationManager;
-        this.jwtCore = jwtCore;
-        this.passwordEncoder = passwordEncoder;
-    }
-
-    @Autowired
-    public void setUserRepository(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
-
-
-    @Autowired
-    public void setAuthenticationManager(AuthenticationManager authenticationManager) {
-        this.authenticationManager = authenticationManager;
-    }
-
-    @Autowired
-    public void setJwtCore(JwtCore jwtCore) {
         this.jwtCore = jwtCore;
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody SignupRequest signupRequest){
-        if(userRepository.existsUserByUsername(signupRequest.getUsername())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Choose different name");
+    public ResponseEntity<?> signup(@RequestBody SignupRequest signupRequest) {
+        try {
+            userService.saveUser(signupRequest);
+            return ResponseEntity.status(HttpStatus.CREATED).body("User created successfully");
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
         }
-        if(userRepository.existsUserByEmail(signupRequest.getEmail())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Choose different email");
-        }
-
-        User user = new User();
-        user.setUsername(signupRequest.getUsername());
-        user.setEmail(signupRequest.getEmail());
-        String pass = this.passwordEncoder.encode(signupRequest.getPassword());
-        user.setPassword(pass);
-        userRepository.save(user);
-        return ResponseEntity.ok(user.getPassword());
     }
 
-    public @PostMapping("/signin")
-    ResponseEntity<?> signin(@RequestBody SigninRequest signinRequest){
-        Authentication authentication = null;
-        try{
-            authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signinRequest.getUsername(), signinRequest.getPassword()));
-        } catch(BadCredentialsException e){
-            return new ResponseEntity<>(new AppError(HttpStatus.UNAUTHORIZED.value(), "Wrong login and password"), HttpStatus.UNAUTHORIZED);
-        }
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtCore.generateToken(authentication);
-        return ResponseEntity.ok(jwt);
-    }
+    @PostMapping("/signin")
+    public ResponseEntity<?> signin(@RequestBody SigninRequest signinRequest) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            signinRequest.getUsername(), signinRequest.getPassword()
+                    )
+            );
 
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String jwt = jwtCore.generateToken(authentication);
+            return ResponseEntity.ok(new JwtResponse(jwt));
+        } catch (BadCredentialsException e) {
+            return new ResponseEntity<>(
+                    new AppError(HttpStatus.UNAUTHORIZED.value(), "Wrong login or password"),
+                    HttpStatus.UNAUTHORIZED
+            );
+        }
+    }
 }
+

@@ -1,6 +1,7 @@
 package durden.company.inventory.config;
 
 import durden.company.inventory.entities.Address;
+import durden.company.inventory.entities.InventoryItem;
 import durden.company.inventory.entities.Warehouse;
 import durden.company.inventory.repositories.WarehouseRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -17,29 +18,26 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        Warehouse warehouse1 = new Warehouse();
-        warehouse1.setTitle("Central Warehouse");
+        Warehouse warehouse = new Warehouse();
+        warehouse.setTitle("Central Warehouse");
 
-        Address address1 = new Address();
-        address1.setCountry("Poland");
-        address1.setCity("Warsaw");
-        address1.setStreet("Main Street 1");
-        address1.setPostCode("00-001");
+        Address address = new Address();
+        address.setCountry("Poland");
+        address.setCity("Warsaw");
+        address.setStreet("Main Street 1");
+        address.setPostCode("00-001");
 
-        warehouse1.setAddress(address1);
+        warehouse.setAddress(address);
 
-        Warehouse warehouse2 = new Warehouse();
-        warehouse2.setTitle("West Warehouse");
+        for (long i = 1; i <= 12; i++) {
+            InventoryItem item = new InventoryItem();
+            item.setProductId(i);
+            item.setQuantity(10);
+            item.setWarehouse(warehouse);
+            warehouse.getItems().add(item);
+        }
 
-        Address address2 = new Address();
-        address2.setCountry("Germany");
-        address2.setCity("Berlin");
-        address2.setStreet("Westend Avenue 5");
-        address2.setPostCode("10115");
-
-        warehouse2.setAddress(address2);
-
-        warehouseRepository.save(warehouse1);
-        warehouseRepository.save(warehouse2);
+        warehouseRepository.save(warehouse);
     }
+
 }
