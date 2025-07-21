@@ -55,12 +55,21 @@ async function removeProduct(productId: number) {
 
 
 async function pay() {
-  try{
-    await axios.post('http://localhost:8081/carts/checkout', {})
-  } catch (error){
-    console.log(error)
+  if (!cart.value || selectedMethod.value === null) return
+
+  const payload = {
+    userId: cart.value.userId,
+    paymentMethodId: selectedMethod.value
+  }
+
+  try {
+    await axios.post('http://localhost:8081/carts/checkout', payload)
+    console.log('Checkout sent!')
+  } catch (error) {
+    console.error('Checkout error:', error)
   }
 }
+
 
 onMounted(async () =>{
   await loadCart();

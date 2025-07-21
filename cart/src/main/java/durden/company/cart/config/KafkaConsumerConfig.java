@@ -32,7 +32,8 @@ public class KafkaConsumerConfig {
         return new DefaultKafkaConsumerFactory<>(
                 props,
                 new StringDeserializer(),
-                new JsonDeserializer<>(AddToCartEventDTO.class, false));
+                new JsonDeserializer<>(AddToCartEventDTO.class, false)
+        );
     }
 
     @Bean

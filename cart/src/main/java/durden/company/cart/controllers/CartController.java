@@ -1,6 +1,7 @@
 package durden.company.cart.controllers;
 
 import durden.company.cart.DTOs.CartCheckoutEventDTO;
+import durden.company.cart.DTOs.CartCheckoutRequestDTO;
 import durden.company.cart.DTOs.CartDTO;
 import durden.company.cart.services.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,7 @@ public class CartController {
     }
 
     @PostMapping("/checkout")
-    public ResponseEntity<String> checkoutCart(@RequestBody CartCheckoutEventDTO request) {
+    public ResponseEntity<String> checkoutCart(@RequestBody CartCheckoutRequestDTO request) {
         cartService.checkoutCart(request);
         return ResponseEntity.ok("Checkout event sent!");
     }

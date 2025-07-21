@@ -36,10 +36,14 @@ public class CartItemService {
     }
 
     public List<CartItem> findCartItemsByCartId(Long cartId) {
-        return cartItemRepository.findCartItemsByCartId(cartId);
+        return cartItemRepository.findByCartId(cartId);
     }
 
     public void deleteCartItem(Long cartItemId) {
         cartItemRepository.deleteById(cartItemId);
+    }
+
+    public List<CartItem> findByUserId(Long cartItemId) {
+        return cartItemRepository.findByCart_UserId(cartItemId);
     }
 }

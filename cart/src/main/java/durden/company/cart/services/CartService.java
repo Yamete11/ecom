@@ -1,9 +1,6 @@
 package durden.company.cart.services;
 
-import durden.company.cart.DTOs.AddToCartEventDTO;
-import durden.company.cart.DTOs.CartCheckoutEventDTO;
-import durden.company.cart.DTOs.CartDTO;
-import durden.company.cart.DTOs.ProductDTO;
+import durden.company.cart.DTOs.*;
 import durden.company.cart.entities.Cart;
 import durden.company.cart.entities.CartItem;
 import durden.company.cart.kafka.CartKafkaProducer;
@@ -11,15 +8,12 @@ import durden.company.cart.mappers.CartMapper;
 import durden.company.cart.repositories.CartRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class CartService {
@@ -87,7 +81,19 @@ public class CartService {
         cartItemService.addOrUpdateItem(cart, eventDTO.getProductId(), eventDTO.getQuantity());
     }
 
-    public void checkoutCart(CartCheckoutEventDTO request) {
-        cartKafkaProducer.sendCartCheckoutEvent(request);
+    public void checkoutCart(CartCheckoutRequestDTO request) {
+        List<CartItem> cartItems = cartItemService.findByUserId(request.getUserId());
+
+        List<CartItemDTO> itemDTOs = cartItems.stream()
+                .map(item -> new CartItemDTO(item.getProductId(), item.getQuantity()))
+                .toList();
+
+        CartCheckoutEventDTO eventDTO = new CartCheckoutEventDTO();
+        eventDTO.setUserId(request.getUserId());
+        eventDTO.setPaymentMethodId(request.getPaymentMethodId());
+        eventDTO.setItems(itemDTOs);
+
+        cartKafkaProducer.sendCartCheckoutEvent(eventDTO);
     }
+
 }
