@@ -1,5 +1,6 @@
 package com.example.ecom.services;
 
+import com.example.ecom.DTOs.CategoryDTO;
 import com.example.ecom.entities.Category;
 import com.example.ecom.repositories.CategoryRepository;
 import com.example.ecom.repositories.ProductRepository;
@@ -26,8 +27,17 @@ public class CategoryService {
         return categoryRepository.findById(id).orElseThrow(() -> new RuntimeException("Category with id " + id + " not found"));
     }
 
-    public List<Category> findAll() {
-        return categoryRepository.findAll();
+    public CategoryDTO getCategoryByProductId(long id) {
+        Category category =  categoryRepository.findCategoryByProductId(id).orElseThrow(() -> new RuntimeException("Category with id " + id + " not found"));
+        return new CategoryDTO(category.getId(), category.getTitle());
+    }
+
+    public List<CategoryDTO> findAll() {
+        List<Category> category = categoryRepository.findAll();
+
+        return category.stream()
+                .map(c -> new CategoryDTO(c.getId(), c.getTitle()))
+                .toList();
     }
 
     public Category save(Category category) {

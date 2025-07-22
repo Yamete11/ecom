@@ -1,5 +1,6 @@
 package com.example.ecom.controllers;
 
+import com.example.ecom.DTOs.CategoryDTO;
 import com.example.ecom.entities.Category;
 import com.example.ecom.entities.Product;
 import com.example.ecom.services.CategoryService;
@@ -23,7 +24,7 @@ public class CategoryController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Category>> findAllCategories() {
+    public ResponseEntity<List<CategoryDTO>> findAllCategories() {
         return new ResponseEntity<>(categoryService.findAll(),  HttpStatus.OK);
     }
 
@@ -31,6 +32,12 @@ public class CategoryController {
     public ResponseEntity<Category> getCategoryById(@PathVariable long id) {
         return new ResponseEntity<>(categoryService.getCategoryById(id),  HttpStatus.OK);
     }
+
+    @GetMapping("/product/{id}")
+    public ResponseEntity<CategoryDTO> getCategoryByProductId(@PathVariable long id) {
+        return new ResponseEntity<>(categoryService.getCategoryByProductId(id),  HttpStatus.OK);
+    }
+
 
     @PostMapping
     public ResponseEntity<Category> createCategory(@RequestBody Category category) {

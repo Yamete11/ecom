@@ -1,6 +1,9 @@
-package durden.company.inventory.DTOs;
+package durden.company.order.DTOs;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 

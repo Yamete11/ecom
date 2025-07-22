@@ -1,25 +1,18 @@
 package durden.company.order.services;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import durden.company.order.DTOs.CreateOrderDTO;
+import durden.company.order.DTOs.CartCheckoutEventDTO;
+import durden.company.order.DTOs.OrderDTO;
 import durden.company.order.entities.Order;
 import durden.company.order.entities.OrderItem;
 import durden.company.order.entities.OrderStatus;
-import durden.company.order.events.OrderCreatedEvent;
-import durden.company.order.mappers.OrderMapper;
 import durden.company.order.repositories.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-
-import static durden.company.order.mappers.OrderMapper.toDTO;
 
 @Service
 public class OrderService {
@@ -40,18 +33,23 @@ public class OrderService {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public List<CreateOrderDTO> findAll() {
-        return orderRepository.findAll().stream()
-                .map(OrderMapper::toDTO)
-                .toList();
+    public List<OrderDTO> getOrders(){
+        List<Order> orders = orderRepository.findAll();
+        return orders.stream()
+               .map(order -> {
+                   OrderDTO orderDTO = new OrderDTO();
+                   orderDTO.setUserId(order.getUserId());
+                   orderDTO.setTotalPrice(order.getTotalPrice());
+                   orderDTO.setCreatedAt(order.getCreatedAt());
+                   orderDTO.setOrderStatus(order.getOrderStatus().getTitle());
+                   orderDTO.setItems(orderItemService.getOrderItemsByOrderId(order.getId()));
+                    return orderDTO;
+                })
+               .toList();
     }
 
-    public Optional<CreateOrderDTO> findOrder(long id) {
-        return orderRepository.findById(id)
-                .map(OrderMapper::toDTO);
-    }
 
-    public CreateOrderDTO createOrder(CreateOrderDTO orderDTO) {
+    public void createOrder(CartCheckoutEventDTO orderDTO) {
         OrderStatus newStatus = orderStatusService.findOrderStatusByName("New");
         if (newStatus == null) {
             throw new RuntimeException("OrderStatus 'new' not found");
@@ -72,20 +70,7 @@ public class OrderService {
             order.getItems().add(item);
         }
 
-        Order savedOrder = orderRepository.save(order);
-
-        var event = new OrderCreatedEvent(savedOrder.getId(), savedOrder.getUserId(),
-                savedOrder.getTotalPrice(), orderDTO.getPaymentMethod());
-
-        try {
-            String eventJson = objectMapper.writeValueAsString(event);
-            kafkaTemplate.send("order-created-topic", eventJson);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to serialize order created event", e);
-        }
-
-        return OrderMapper.toDTO(savedOrder);
-
+        orderRepository.save(order);
     }
 
 

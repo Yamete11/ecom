@@ -1,16 +1,14 @@
 package durden.company.order.DTOs;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 @Data
-@AllArgsConstructor
-public class CreateOrderDTO {
+public class CartCheckoutEventDTO {
     private Long userId;
+    private Long paymentMethodId;
     private BigDecimal totalPrice;
-    private List<OrderItemDTO> items;
-    private String paymentMethod;
+    private List<CartItemDTO> items;
 }

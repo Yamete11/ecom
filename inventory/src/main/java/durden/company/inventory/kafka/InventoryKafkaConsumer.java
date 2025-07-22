@@ -8,16 +8,16 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CartKafkaConsumer {
+public class InventoryKafkaConsumer {
 
-    private static final Logger logger = LoggerFactory.getLogger(CartKafkaConsumer.class);
+    private static final Logger logger = LoggerFactory.getLogger(InventoryKafkaConsumer.class);
     private final WarehouseService warehouseService;
 
-    public CartKafkaConsumer(WarehouseService warehouseService) {
+    public InventoryKafkaConsumer(WarehouseService warehouseService) {
         this.warehouseService = warehouseService;
     }
 
-    @KafkaListener(topics = "order-create", groupId = "inventory-group", containerFactory = "cartCheckoutKafkaListenerContainerFactory")
+    @KafkaListener(topics = "inventory-check", groupId = "inventory-group", containerFactory = "cartCheckoutKafkaListenerContainerFactory")
     public void consumeCartCheckoutEvent(CartCheckoutEventDTO event) {
         logger.info("[Kafka] Received cart checkout event: {}", event);
         warehouseService.postCheckout(event);

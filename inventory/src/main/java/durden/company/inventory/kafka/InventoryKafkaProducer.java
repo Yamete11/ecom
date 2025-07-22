@@ -1,6 +1,6 @@
-package durden.company.cart.kafka;
+package durden.company.inventory.kafka;
 
-import durden.company.cart.DTOs.CartCheckoutEventDTO;
+import durden.company.inventory.DTOs.CartCheckoutEventDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,18 +8,19 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CartKafkaProducer {
+public class InventoryKafkaProducer {
 
     private final KafkaTemplate<String, CartCheckoutEventDTO> kafkaTemplate;
-    private static final Logger logger = LoggerFactory.getLogger(CartKafkaProducer.class);
+    private static final Logger logger = LoggerFactory.getLogger(InventoryKafkaProducer.class);
+
 
     @Autowired
-    public CartKafkaProducer(KafkaTemplate<String, CartCheckoutEventDTO> kafkaTemplate) {
+    public InventoryKafkaProducer(KafkaTemplate<String, CartCheckoutEventDTO> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
     }
 
     public void sendCartCheckoutEvent(CartCheckoutEventDTO event) {
-        kafkaTemplate.send("inventory-check", event);
+        kafkaTemplate.send("create-order", event);
         logger.info("[Kafka] Sent cart checkout event: {}", event);
     }
 }

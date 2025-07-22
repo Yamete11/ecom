@@ -11,9 +11,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class CartService {
@@ -82,18 +85,57 @@ public class CartService {
     }
 
     public void checkoutCart(CartCheckoutRequestDTO request) {
-        List<CartItem> cartItems = cartItemService.findByUserId(request.getUserId());
+        Long userId = request.getUserId();
+        Long paymentMethodId = request.getPaymentMethodId();
 
-        List<CartItemDTO> itemDTOs = cartItems.stream()
-                .map(item -> new CartItemDTO(item.getProductId(), item.getQuantity()))
+        List<CartItem> cartItems = cartItemService.findByUserId(userId);
+
+        if (cartItems.isEmpty()) {
+            throw new IllegalStateException("Cart is empty for user ID: " + userId);
+        }
+
+        List<Long> productIds = cartItems.stream()
+                .map(CartItem::getProductId)
+                .toList();
+
+        ProductDTO[] productDTOs = restTemplate.postForObject(
+                productServiceUrl + "/batch",
+                productIds,
+                ProductDTO[].class
+        );
+
+        if (productDTOs == null || productDTOs.length == 0) {
+            throw new IllegalStateException("No product information found for cart items");
+        }
+
+        Map<Long, Integer> productIdToQuantity = cartItems.stream()
+                .collect(Collectors.toMap(CartItem::getProductId, CartItem::getQuantity));
+
+        BigDecimal totalPrice = Arrays.stream(productDTOs)
+                .map(p -> {
+                    BigDecimal price = p.getPrice();
+                    int quantity = productIdToQuantity.getOrDefault(p.getId(), 0);
+                    return price != null ? price.multiply(BigDecimal.valueOf(quantity)) : BigDecimal.ZERO;
+                })
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        List<CartItemDTO> itemDTOs = Arrays.stream(productDTOs)
+                .map(p -> new CartItemDTO(
+                        p.getId(),
+                        productIdToQuantity.getOrDefault(p.getId(), 0),
+                        p.getPrice(),
+                        p.getCategory()))
                 .toList();
 
         CartCheckoutEventDTO eventDTO = new CartCheckoutEventDTO();
-        eventDTO.setUserId(request.getUserId());
-        eventDTO.setPaymentMethodId(request.getPaymentMethodId());
+        eventDTO.setUserId(userId);
+        eventDTO.setPaymentMethodId(paymentMethodId);
+        eventDTO.setTotalPrice(totalPrice);
         eventDTO.setItems(itemDTOs);
 
         cartKafkaProducer.sendCartCheckoutEvent(eventDTO);
     }
+
+
 
 }
