@@ -31,7 +31,6 @@ public class ProductService {
         return ProductMapper.toDTOList(productRepository.findAllById(ids));
     }
 
-
     public List<ProductDTO> findAll() {
         return ProductMapper.toDTOList(productRepository.findAll());
     }
