@@ -29,10 +29,10 @@ async function addToCart() {
       body: JSON.stringify({
         userId: 1,
         productId: props.product.id,
-        quantity: 1
       }),
     })
-
+    console.log(response)
+    console.log(props.product.id)
     if (!response.ok) {
       throw new Error('Failed to add to cart')
     }

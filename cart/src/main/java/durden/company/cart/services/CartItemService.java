@@ -1,5 +1,6 @@
 package durden.company.cart.services;
 
+import durden.company.cart.DTOs.AddToCartEventDTO;
 import durden.company.cart.entities.Cart;
 import durden.company.cart.entities.CartItem;
 import durden.company.cart.repositories.CartItemRepository;
@@ -18,17 +19,20 @@ public class CartItemService {
         this.cartItemRepository = cartItemRepository;
     }
 
-    public void addOrUpdateItem(Cart cart, Long productId, int quantity) {
-        CartItem item = cartItemRepository.findByCartIdAndProductId(cart.getId(), productId)
+    public void addOrUpdateItem(Cart cart, AddToCartEventDTO addToCartEventDTO) {
+        CartItem item = cartItemRepository.findByCartIdAndProductId(cart.getId(), addToCartEventDTO.getId())
                 .map(existingItem -> {
-                    existingItem.setQuantity(existingItem.getQuantity() + quantity);
+                    existingItem.setQuantity(existingItem.getQuantity() + 1);
                     return existingItem;
                 })
                 .orElseGet(() -> {
                     CartItem newItem = new CartItem();
+                    newItem.setProductId(addToCartEventDTO.getId());
+                    newItem.setTitle(addToCartEventDTO.getTitle());
+                    newItem.setPrice(addToCartEventDTO.getPrice());
+                    newItem.setCategory(addToCartEventDTO.getCategory());
+                    newItem.setQuantity(1);
                     newItem.setCart(cart);
-                    newItem.setProductId(productId);
-                    newItem.setQuantity(quantity);
                     return newItem;
                 });
 

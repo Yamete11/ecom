@@ -1,38 +1,32 @@
 <script setup lang="ts">
-import { defineEmits } from 'vue'
-
 interface Product {
-  id: number
-  title: string
-  price: number
-  category: string
+  productId: number;
+  title: string;
+  quantity: number;
+  price: number;
+  category: string;
 }
 
 const props = defineProps<{
-  product: Product
-}>()
+  product: Product;
+}>();
 
 const emit = defineEmits<{
-  (e: 'remove', id: number): void
-}>()
+  (e: "remove", id: number): void;
+}>();
 
 const handleRemove = () => {
-  emit('remove', props.product.id)
-}
+  emit("remove", props.product.productId);
+};
 </script>
 
 <template>
-  <div class="product-item">
-    <div class="info">
-      <h3 class="title">{{ product.title }}</h3>
-      <p class="category">{{ product.category }}</p>
-    </div>
-    <div class="actions">
-      <div class="price">{{ product.price }} $</div>
-      <button class="remove-btn" @click="handleRemove">🗑</button>
-    </div>
+  <div class="cart-item">
+    <div>{{ product.title }} - {{ product.quantity }} x ${{ product.price }}</div>
+    <button @click="handleRemove">Remove</button>
   </div>
 </template>
+
 
 <style scoped>
 .product-item {

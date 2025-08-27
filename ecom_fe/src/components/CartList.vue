@@ -2,8 +2,9 @@
 import CartItem from "@/components/CartItem.vue";
 
 interface Product {
-  id: number
+  productId: number
   title: string
+  quantity: number
   price: number
   category: string
 }
@@ -23,7 +24,7 @@ const emit = defineEmits<{
     <div class="products">
       <CartItem
           v-for="p in product"
-          :key="p.id"
+          :key="p.productId"
           :product="p"
           @remove="emit('remove', $event)"
       />

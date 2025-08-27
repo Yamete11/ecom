@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "products")
 @Data
@@ -17,8 +19,8 @@ public class Product {
     @Column(unique = true)
     private String title;
 
-    @Column()
-    private Float price;
+    @Column(precision = 10, scale = 2, nullable = false)
+    private BigDecimal price;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")

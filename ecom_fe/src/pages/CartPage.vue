@@ -4,8 +4,9 @@ import { onMounted, ref } from "vue";
 import axios from 'axios'
 
 interface Product {
-  id: number
+  productId: number
   title: string
+  quantity: number
   price: number
   category: string
 }
@@ -35,11 +36,11 @@ async function loadPaymentMethods(){
   }
 }
 
-const cart = ref<CartDTO | null>(null)
+const cartItems = ref<Product[] | null>(null)
 
 const loadCart = async () => {
   const response = await axios.get('http://localhost:8081/carts/1')
-  cart.value = response.data
+  cartItems.value = response.data
 }
 
 async function removeProduct(productId: number) {
@@ -47,7 +48,7 @@ async function removeProduct(productId: number) {
 
   try {
     await axios.delete(`http://localhost:8081/cart-items/${productId}`)
-    cart.value.cartItems = cart.value.cartItems.filter(p => p.id !== productId)
+    cart.value.cartItems = cart.value.cartItems.filter(p => p.productId !== productId)
   } catch (error) {
     console.error('Error:', error)
   }
@@ -83,7 +84,7 @@ onMounted(async () =>{
     <div class="cart-container">
       <h1 class="title">Your Cart</h1>
       <CartList
-          :product="cart?.cartItems ?? []"
+          :product="cartItems ?? []"
           @remove="removeProduct"
       />
       <div class="pay-section">

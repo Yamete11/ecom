@@ -1,6 +1,7 @@
 package com.example.ecom.kafka;
 
-import com.example.ecom.DTOs.AddToCartEventDTO;
+import com.example.ecom.DTOs.AddToCartRequestDTO;
+import com.example.ecom.DTOs.ProductDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -12,17 +13,17 @@ public class CartKafkaProducer {
 
     private static final Logger logger = LoggerFactory.getLogger(CartKafkaProducer.class);
 
-    private final KafkaTemplate<String, AddToCartEventDTO> kafkaTemplate;
+    private final KafkaTemplate<String, AddToCartRequestDTO> kafkaTemplate;
 
     @Value("${kafka.topics.cart-add}")
     private String topic;
 
-    public CartKafkaProducer(KafkaTemplate<String, AddToCartEventDTO> kafkaTemplate) {
+    public CartKafkaProducer(KafkaTemplate<String, AddToCartRequestDTO> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public void sendAddToCartEvent(AddToCartEventDTO event) {
-        logger.info("Sending AddToCartEventDTO to topic {}: {}", topic, event);
+    public void sendAddToCartEvent(AddToCartRequestDTO event) {
+        logger.info("Sending ProductDTO to topic {}: {}", topic, event);
         kafkaTemplate.send(topic, event);
     }
 }

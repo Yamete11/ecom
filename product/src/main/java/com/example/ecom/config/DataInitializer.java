@@ -8,6 +8,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.math.BigDecimal;
+
 @Component
 public class DataInitializer implements CommandLineRunner {
 
@@ -39,24 +41,25 @@ public class DataInitializer implements CommandLineRunner {
         home.setTitle("Home & Kitchen");
         categoryRepository.save(home);
 
-        productRepository.save(createProduct("Smartphone", 120, electronics));
-        productRepository.save(createProduct("Laptop", 175, electronics));
-        productRepository.save(createProduct("Headphones", 20, electronics));
+        productRepository.save(createProduct("Smartphone", BigDecimal.valueOf(120.00), electronics));
+        productRepository.save(createProduct("Laptop", BigDecimal.valueOf(175.00), electronics));
+        productRepository.save(createProduct("Headphones", BigDecimal.valueOf(20.00), electronics));
 
-        productRepository.save(createProduct("Novel", 45, books));
-        productRepository.save(createProduct("Cookbook", 80, books));
-        productRepository.save(createProduct("Science Fiction", 101, books));
+        productRepository.save(createProduct("Novel", BigDecimal.valueOf(45.00), books));
+        productRepository.save(createProduct("Cookbook", BigDecimal.valueOf(80.00), books));
+        productRepository.save(createProduct("Science Fiction", BigDecimal.valueOf(101.00), books));
 
-        productRepository.save(createProduct("T-shirt", 95, clothing));
-        productRepository.save(createProduct("Jeans", 37, clothing));
-        productRepository.save(createProduct("Jacket", 25, clothing));
+        productRepository.save(createProduct("T-shirt", BigDecimal.valueOf(95.00), clothing));
+        productRepository.save(createProduct("Jeans", BigDecimal.valueOf(37.00), clothing));
+        productRepository.save(createProduct("Jacket", BigDecimal.valueOf(25.00), clothing));
 
-        productRepository.save(createProduct("Coffee Maker", 77, home));
-        productRepository.save(createProduct("Blender", 23, home));
-        productRepository.save(createProduct("Vacuum Cleaner", 44, home));
+        productRepository.save(createProduct("Coffee Maker", BigDecimal.valueOf(77.00), home));
+        productRepository.save(createProduct("Blender", BigDecimal.valueOf(23.00), home));
+        productRepository.save(createProduct("Vacuum Cleaner", BigDecimal.valueOf(44.00), home));
+
     }
 
-    private Product createProduct(String title, float price, Category category) {
+    private Product createProduct(String title, BigDecimal price, Category category) {
         Product product = new Product();
         product.setTitle(title);
         product.setPrice(price);

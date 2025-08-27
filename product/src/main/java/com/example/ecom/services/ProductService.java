@@ -1,9 +1,11 @@
 package com.example.ecom.services;
 
+import com.example.ecom.DTOs.AddToCartRequestDTO;
 import com.example.ecom.DTOs.ProductDTO;
 import com.example.ecom.entities.Category;
 import com.example.ecom.entities.Product;
 import com.example.ecom.exceptions.ProductNotFoundException;
+import com.example.ecom.kafka.CartKafkaProducer;
 import com.example.ecom.mappers.ProductMapper;
 import com.example.ecom.repositories.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,19 +18,18 @@ import java.util.Optional;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final CartKafkaProducer cartKafkaProducer;
+
 
     @Autowired
-    public ProductService(ProductRepository productRepository) {
+    public ProductService(ProductRepository productRepository, CartKafkaProducer cartKafkaProducer) {
         this.productRepository = productRepository;
+        this.cartKafkaProducer = cartKafkaProducer;
     }
 
     public ProductDTO getProductById(long id) {
         return ProductMapper.toDTO(productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + id)));
-    }
-
-    public List<ProductDTO> getProductsByIds(List<Long> ids) {
-        return ProductMapper.toDTOList(productRepository.findAllById(ids));
     }
 
     public List<ProductDTO> findAll() {
@@ -50,4 +51,20 @@ public class ProductService {
     public void deleteProductsByCategoryId(long id){
         productRepository.deleteByCategoryId(id);
     }
+
+    public void addProductToCart(Long userId, Long productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found with id: " + productId));
+
+        AddToCartRequestDTO event = new AddToCartRequestDTO(
+                userId,
+                product.getId(),
+                product.getTitle(),
+                product.getPrice(),
+                product.getCategory().getTitle()
+        );
+
+        cartKafkaProducer.sendAddToCartEvent(event);
+    }
+
 }

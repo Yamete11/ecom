@@ -37,7 +37,7 @@ public class CartService {
         this.cartKafkaProducer = cartKafkaProducer;
     }
 
-    public CartDTO getOrCreateCartByUserId(Long userId) {
+    public List<CartItemDTO> getOrCreateCartByUserId(Long userId) {
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseGet(() -> {
                     Cart newCart = new Cart();
@@ -46,94 +46,31 @@ public class CartService {
                     return cartRepository.save(newCart);
                 });
 
-
         List<CartItem> cartItems = cartItemService.findCartItemsByCartId(cart.getId());
 
-        List<Long> productIds = cartItems.stream()
-                .map(CartItem::getProductId)
-                .distinct()
-                .toList();
-
-        ProductDTO[] productDTOs = restTemplate.postForObject(
-                productServiceUrl + "/batch",
-                productIds,
-                ProductDTO[].class
-        );
-
-
-        List<ProductDTO> fullProducts = Arrays.stream(productDTOs)
-                .map(p -> new ProductDTO(
-                        p.getId(),
-                        p.getTitle(),
-                        p.getPrice(),
-                        p.getCategory()
-                ))
-                .toList();
-
-        return CartMapper.toDTO(cart, fullProducts);
+        return cartItems.stream()
+                .map(item -> new CartItemDTO(
+                        item.getProductId(),
+                        item.getTitle(),
+                        item.getQuantity(),
+                        item.getPrice(),
+                        item.getCategory()
+                )).toList();
     }
 
-    public void addToCart(AddToCartEventDTO eventDTO) {
-        Cart cart = cartRepository.findByUserId(eventDTO.getUserId()).orElseGet(() -> {
+    public void addToCart(AddToCartEventDTO addToCartEventDTO) {
+        Cart cart = cartRepository.findByUserId(addToCartEventDTO.getUserId()).orElseGet(() -> {
             Cart newCart = new Cart();
-            newCart.setUserId(eventDTO.getUserId());
+            newCart.setUserId(addToCartEventDTO.getUserId());
             newCart.setCreatedAt(LocalDateTime.now());
             return cartRepository.save(newCart);
         });
 
-        cartItemService.addOrUpdateItem(cart, eventDTO.getProductId(), eventDTO.getQuantity());
+        cartItemService.addOrUpdateItem(cart, addToCartEventDTO);
     }
 
     public void checkoutCart(CartCheckoutRequestDTO request) {
-        Long userId = request.getUserId();
-        Long paymentMethodId = request.getPaymentMethodId();
-
-        List<CartItem> cartItems = cartItemService.findByUserId(userId);
-
-        if (cartItems.isEmpty()) {
-            throw new IllegalStateException("Cart is empty for user ID: " + userId);
-        }
-
-        List<Long> productIds = cartItems.stream()
-                .map(CartItem::getProductId)
-                .toList();
-
-        ProductDTO[] productDTOs = restTemplate.postForObject(
-                productServiceUrl + "/batch",
-                productIds,
-                ProductDTO[].class
-        );
-
-        if (productDTOs == null || productDTOs.length == 0) {
-            throw new IllegalStateException("No product information found for cart items");
-        }
-
-        Map<Long, Integer> productIdToQuantity = cartItems.stream()
-                .collect(Collectors.toMap(CartItem::getProductId, CartItem::getQuantity));
-
-        BigDecimal totalPrice = Arrays.stream(productDTOs)
-                .map(p -> {
-                    BigDecimal price = p.getPrice();
-                    int quantity = productIdToQuantity.getOrDefault(p.getId(), 0);
-                    return price != null ? price.multiply(BigDecimal.valueOf(quantity)) : BigDecimal.ZERO;
-                })
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        List<CartItemDTO> itemDTOs = Arrays.stream(productDTOs)
-                .map(p -> new CartItemDTO(
-                        p.getId(),
-                        productIdToQuantity.getOrDefault(p.getId(), 0),
-                        p.getPrice(),
-                        p.getCategory()))
-                .toList();
-
-        CartCheckoutEventDTO eventDTO = new CartCheckoutEventDTO();
-        eventDTO.setUserId(userId);
-        eventDTO.setPaymentMethodId(paymentMethodId);
-        eventDTO.setTotalPrice(totalPrice);
-        eventDTO.setItems(itemDTOs);
-
-        cartKafkaProducer.sendCartCheckoutEvent(eventDTO);
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 
