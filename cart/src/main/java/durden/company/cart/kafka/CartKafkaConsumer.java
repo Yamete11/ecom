@@ -1,8 +1,6 @@
 package durden.company.cart.kafka;
 
-import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import durden.company.cart.DTOs.AddToCartEventDTO;
@@ -12,9 +10,6 @@ import durden.company.cart.services.CartService;
 public class CartKafkaConsumer {
 
     private final CartService cartService;
-
-    @Value("${kafka.topics.cart-add}")
-    private String topic;
 
     @Autowired
     public CartKafkaConsumer(CartService cartService) {
