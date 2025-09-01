@@ -43,11 +43,9 @@ public class CartItemService {
         return cartItemRepository.findByCartId(cartId);
     }
 
-    public void deleteCartItem(Long cartItemId) {
-        cartItemRepository.deleteById(cartItemId);
+    public boolean deleteCartItem(Long productId) {
+        int deletedCount = cartItemRepository.deleteByProductId(productId);
+        return deletedCount > 0;
     }
 
-    public List<CartItem> findByUserId(Long cartItemId) {
-        return cartItemRepository.findByCart_UserId(cartItemId);
-    }
 }

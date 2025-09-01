@@ -24,8 +24,10 @@ public class CartController {
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<List<CartItemDTO>> getCart(@PathVariable Long userId) {
-        return new ResponseEntity<>(cartService.getOrCreateCartByUserId(userId),  HttpStatus.OK);
+    public ResponseEntity<CartDTO> getCart(@PathVariable Long userId) {
+        List<CartItemDTO> items = cartService.getOrCreateCartByUserId(userId);
+        CartDTO cartDTO = new CartDTO(userId, items);
+        return ResponseEntity.ok(cartDTO);
     }
 
     @PostMapping("/checkout")

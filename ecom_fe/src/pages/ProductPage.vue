@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
-import api from '../api/axios'
+import {api} from '../api/axios'
 import ProductList from '../components/ProductList.vue'
 
 const products = ref([])

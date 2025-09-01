@@ -19,9 +19,12 @@ public class CartItemController {
         this.cartItemService = cartItemService;
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCartItem(@PathVariable Long id) {
-        cartItemService.deleteCartItem(id);
+    @DeleteMapping("/{productId}")
+    public ResponseEntity<Void> deleteCartItem(@PathVariable Long productId) {
+        boolean deleted = cartItemService.deleteCartItem(productId);
+        if(!deleted){
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.noContent().build();
     }
 

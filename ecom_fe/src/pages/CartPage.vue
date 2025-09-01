@@ -1,83 +1,26 @@
 <script setup lang="ts">
 import CartList from '../components/CartList.vue'
 import { onMounted, ref } from "vue";
-import axios from 'axios'
+import { Product, CartAPI } from "@/api/cart";
 
-interface Product {
-  productId: number
-  title: string
-  quantity: number
-  price: number
-  category: string
-}
-
-interface CartDTO {
-  id: number
-  userId: number
-  createdAt: string
-  cartItems: Product[]
-}
-
-interface PaymentMethods {
-  id: number
-  title: string
-}
-
-const paymentMethods = ref<PaymentMethods[]>([])
-const selectedMethod = ref<number | null>(null)
-
-async function loadPaymentMethods(){
-  try {
-    const response = await axios.get('http://localhost:8082/payment-methods')
-    paymentMethods.value = response.data
-    selectedMethod.value = paymentMethods.value[0]?.id ?? null
-  } catch (error) {
-    console.error('Error:', error)
-  }
-}
-
-const cartItems = ref<Product[] | null>(null)
+const cartItems = ref<Product[]>([])
 
 const loadCart = async () => {
-  const response = await axios.get('http://localhost:8081/carts/1')
-  cartItems.value = response.data
+  const cart = await CartAPI.getCart(1)
+  cartItems.value = cart.cartItems
+  console.log(cartItems.value)
 }
 
 async function removeProduct(productId: number) {
-  if (!cart.value) return
-
-  try {
-    await axios.delete(`http://localhost:8081/cart-items/${productId}`)
-    cart.value.cartItems = cart.value.cartItems.filter(p => p.productId !== productId)
-  } catch (error) {
-    console.error('Error:', error)
-  }
+  await CartAPI.removeProduct(productId)
+  cartItems.value = cartItems.value.filter(item => item.productId !== productId)
 }
 
-
-async function pay() {
-  if (!cart.value || selectedMethod.value === null) return
-
-  const payload = {
-    userId: cart.value.userId,
-    paymentMethodId: selectedMethod.value
-  }
-
-  try {
-    await axios.post('http://localhost:8081/carts/checkout', payload)
-    console.log('Checkout sent!')
-  } catch (error) {
-    console.error('Checkout error:', error)
-  }
-}
-
-
-onMounted(async () =>{
-  await loadCart();
-  await loadPaymentMethods()
-
+onMounted(async () => {
+  await loadCart()
 })
 </script>
+
 
 <template>
   <div class="cart-wrapper">
@@ -87,24 +30,6 @@ onMounted(async () =>{
           :product="cartItems ?? []"
           @remove="removeProduct"
       />
-      <div class="pay-section">
-        <div class="payment-methods">
-          <label
-              v-for="method in paymentMethods"
-              :key="method.id"
-              class="radio-label"
-          >
-            <input
-                type="radio"
-                :value="method.id"
-                v-model="selectedMethod"
-            />
-            {{ method.title }}
-          </label>
-        </div>
-
-        <button @click="pay">Pay</button>
-      </div>
     </div>
   </div>
 </template>

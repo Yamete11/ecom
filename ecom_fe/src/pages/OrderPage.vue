@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue"
 import axios from "axios"
-import api from '../api/axios'
+import {api} from '../api/axios'
 import OrderList from "@/components/OrderList.vue";
 
 interface OrderItem {
