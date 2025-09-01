@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
-import {api} from '../api/axios'
+import { ref, onMounted } from 'vue'
 import ProductList from '../components/ProductList.vue'
+import { Product, ProductAPI } from '@/api/product'
 
-const products = ref([])
+const products = ref<Product[]>([])
 const searchQuery = ref('')
 
 const loadProducts = async () => {
-  const response = await api.get('/products')
-  products.value = response.data
-  console.log(products)
+  products.value = await ProductAPI.getAll()
+  console.log(products.value)
 }
 
 onMounted(async () => {

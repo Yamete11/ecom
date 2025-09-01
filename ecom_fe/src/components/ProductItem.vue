@@ -1,19 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import api from '../api/axios'
+import { Product, ProductAPI } from '@/api/product'
 
-
-interface Product {
-  id: number
-  title: string
-  price: number
-  category: string
-}
-
-const props = defineProps<{
-  product: Product
-}>()
-
+const props = defineProps<{ product: Product }>()
 const isAdding = ref(false)
 
 async function addToCart() {
@@ -21,22 +10,11 @@ async function addToCart() {
   isAdding.value = true
 
   try {
-    const response = await fetch('http://localhost:8080/products/add-to-cart', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        userId: 1,
-        productId: props.product.id,
-      }),
+    await ProductAPI.addToCart({
+      userId: 1,
+      productId: props.product.id,
     })
-    console.log(response)
-    console.log(props.product.id)
-    if (!response.ok) {
-      throw new Error('Failed to add to cart')
-    }
-
+    console.log(`Product ${props.product.id} added to cart`)
   } catch (error) {
     console.error(error)
     alert('Error adding product to cart')

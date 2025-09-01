@@ -4,19 +4,14 @@ import durden.company.cart.DTOs.*;
 import durden.company.cart.entities.Cart;
 import durden.company.cart.entities.CartItem;
 import durden.company.cart.kafka.CartKafkaProducer;
-import durden.company.cart.mappers.CartMapper;
 import durden.company.cart.repositories.CartRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class CartService {

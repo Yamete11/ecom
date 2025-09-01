@@ -1,4 +1,4 @@
-import { cartAPI } from './axios'
+import { api } from './axios'
 
 export interface Product {
     productId: number
@@ -17,12 +17,12 @@ export interface CartDTO {
 
 export const CartAPI = {
     async getCart(cartId: number): Promise<CartDTO> {
-        const response = await cartAPI.get(`/carts/${cartId}`)
+        const response = await api.get(`/carts/${cartId}`)
         return response.data
     },
 
     async removeProduct(productId: number): Promise<void> {
-        await cartAPI.delete(`/cart-items/${productId}`)
+        await api.delete(`/cart-items/${productId}`)
     }
 
 }
