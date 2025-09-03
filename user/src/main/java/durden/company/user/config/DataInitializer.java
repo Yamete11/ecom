@@ -35,6 +35,8 @@ public class DataInitializer implements CommandLineRunner {
         roleUser.setTitle("User");
         roleRepository.save(roleUser);
 
+        roleRepository.flush();
+
         User user1 = new User();
         user1.setUsername("qwe");
         user1.setEmail("qwe@example.com");
@@ -49,5 +51,6 @@ public class DataInitializer implements CommandLineRunner {
         user2.setRole(roleUser);
         userRepository.save(user2);
     }
+
 }
 

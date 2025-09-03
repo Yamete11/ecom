@@ -5,7 +5,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
@@ -41,7 +40,7 @@ public class TokenFilter extends OncePerRequestFilter {
                 String jwt = headerAuth.substring(7);
 
                 if (jwtCore.validateToken(jwt)) {
-                    String username = jwtCore.getNameFromJwt(jwt);
+                    String username = jwtCore.getUsernameFromToken(jwt);
 
                     if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
