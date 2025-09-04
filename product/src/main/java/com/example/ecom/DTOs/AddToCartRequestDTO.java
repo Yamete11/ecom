@@ -15,4 +15,5 @@ public class AddToCartRequestDTO {
     private String title;
     private BigDecimal price;
     private String category;
+    private String eventId;
 }

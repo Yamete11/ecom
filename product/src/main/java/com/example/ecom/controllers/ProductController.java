@@ -1,7 +1,6 @@
 package com.example.ecom.controllers;
 
 import com.example.ecom.DTOs.AddProductToCartDTO;
-import com.example.ecom.DTOs.AddToCartRequestDTO;
 import com.example.ecom.DTOs.ProductDTO;
 import com.example.ecom.entities.Product;
 import com.example.ecom.services.ProductService;
