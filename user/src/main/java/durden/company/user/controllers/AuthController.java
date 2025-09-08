@@ -3,11 +3,14 @@ package durden.company.user.controllers;
 import durden.company.user.components.UserDetailsImpl;
 import durden.company.user.dto.Tokens;
 import durden.company.user.dto.LoginRequest;
+import durden.company.user.dto.UserDto;
 import durden.company.user.entities.RefreshToken;
 import durden.company.user.entities.User;
 import durden.company.user.services.AuthService;
+import durden.company.user.services.JwtUtils;
 import durden.company.user.services.RefreshTokenService;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseCookie;
@@ -28,6 +31,7 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final AuthService authService;
     private final RefreshTokenService refreshTokenService;
+    private final JwtUtils jwtUtils;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletResponse response) {
@@ -125,6 +129,14 @@ public class AuthController {
         response.addHeader("Set-Cookie", clearRefreshCookie.toString());
 
         return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserDto> me(@CookieValue(value = "JWT", required = false) String token) {
+        if (token == null || !jwtUtils.isValid(token)) {
+            return ResponseEntity.status(401).build();
+        }
+        return ResponseEntity.ok(jwtUtils.getUserFromToken(token));
     }
 
 }
