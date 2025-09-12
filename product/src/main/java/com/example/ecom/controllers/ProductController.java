@@ -10,9 +10,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/products")
+@RequestMapping("/api/products")
 public class ProductController {
 
     private final ProductService productService;
@@ -52,8 +53,12 @@ public class ProductController {
     }
 
     @PostMapping("/add-to-cart")
-    public ResponseEntity<String> addToCart(@RequestBody AddProductToCartDTO request) {
-        productService.addProductToCart(request.getUserId(), request.getProductId());
-        return ResponseEntity.ok("Product sent to cart");
+    public ResponseEntity<Map<String, String>> addToCart(
+            @RequestBody Long productId,
+            @CookieValue("accessToken") String token) {
+
+        productService.addProductToCart(productId, token);
+        return ResponseEntity.ok(Map.of("message", "Product sent to cart"));
     }
+
 }

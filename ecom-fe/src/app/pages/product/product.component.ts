@@ -13,6 +13,7 @@ import { ProductService, Product } from '../../services/product.service';
         @for ( p of products() ; track p.id) {
           <li>
             {{p.title}} - {{p.price}}$ - {{p.category}}
+            <button (click)="addProduct(p.id)">Add</button>
           </li>
         }
       </ul>
@@ -42,12 +43,13 @@ export class ProductComponent implements OnInit {
 
   ngOnInit() {
     this.productService.getAllProducts().subscribe({
-      next: data => {
-        this.products.set(data);
-        console.log('Products loaded:', this.products());
-      },
+      next: data => this.products.set(data),
       error: err => console.error(err)
     });
+  }
+
+  addProduct(productId: number) {
+    this.productService.addProductToCart(productId);
   }
 
 

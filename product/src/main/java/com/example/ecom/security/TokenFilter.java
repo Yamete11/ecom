@@ -1,15 +1,11 @@
-package durden.company.user.components;
+package com.example.ecom.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -19,18 +15,17 @@ import java.io.IOException;
 public class TokenFilter extends OncePerRequestFilter {
 
     private final JwtCore jwtCore;
-    private final UserDetailsService userDetailsService;
 
-    public TokenFilter(JwtCore jwtCore, @Lazy UserDetailsService userDetailsService) {
+    @Autowired
+    public TokenFilter(JwtCore jwtCore) {
         this.jwtCore = jwtCore;
-        this.userDetailsService = userDetailsService;
     }
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-
         try {
             String token = null;
             if (request.getCookies() != null) {
@@ -41,12 +36,9 @@ public class TokenFilter extends OncePerRequestFilter {
                 }
             }
 
-            if (token != null && jwtCore.validateToken(token)) {
-                String username = jwtCore.getUsernameFromToken(token);
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+            if (token != null && !jwtCore.validateToken(token)) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
             }
 
         } catch (Exception e) {
@@ -57,6 +49,3 @@ public class TokenFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 }
-
-
-

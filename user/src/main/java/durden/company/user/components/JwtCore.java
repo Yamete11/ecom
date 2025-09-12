@@ -23,13 +23,14 @@ public class JwtCore {
         this.accessTokenLifetime = accessTokenLifetime;
     }
 
-    public String generateAccessToken(String username) {
-        return generateToken(username, accessTokenLifetime);
+    public String generateAccessToken(String username, long userId) {
+        return generateToken(username, userId, accessTokenLifetime);
     }
 
-    private String generateToken(String username, long lifetime) {
+    private String generateToken(String username, long userId, long lifetime) {
         return Jwts.builder()
                 .setSubject(username)
+                .claim("userId", userId)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + lifetime))
                 .signWith(secretKey, SignatureAlgorithm.HS512)

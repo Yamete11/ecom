@@ -8,6 +8,7 @@ import com.example.ecom.exceptions.ProductNotFoundException;
 import com.example.ecom.kafka.CartKafkaProducer;
 import com.example.ecom.mappers.ProductMapper;
 import com.example.ecom.repositories.ProductRepository;
+import com.example.ecom.security.JwtCore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,12 +21,14 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final CartKafkaProducer cartKafkaProducer;
+    private final JwtCore jwtCore;
 
 
     @Autowired
-    public ProductService(ProductRepository productRepository, CartKafkaProducer cartKafkaProducer) {
+    public ProductService(ProductRepository productRepository, CartKafkaProducer cartKafkaProducer, JwtCore jwtCore) {
         this.productRepository = productRepository;
         this.cartKafkaProducer = cartKafkaProducer;
+        this.jwtCore = jwtCore;
     }
 
     public ProductDTO getProductById(long id) {
@@ -53,9 +56,11 @@ public class ProductService {
         productRepository.deleteByCategoryId(id);
     }
 
-    public void addProductToCart(Long userId, Long productId) {
+    public void addProductToCart(Long productId, String token) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found with id: " + productId));
+
+        Long userId = jwtCore.getUserId(token);
 
         AddToCartRequestDTO event = new AddToCartRequestDTO(
                 userId,
@@ -68,5 +73,4 @@ public class ProductService {
 
         cartKafkaProducer.sendAddToCartEvent(event);
     }
-
 }

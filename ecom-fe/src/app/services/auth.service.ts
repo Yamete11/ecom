@@ -23,7 +23,7 @@ export class AuthService {
 
   login(username: string, password: string): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(
-      'http://localhost:8081/api/auth/login',
+      'http://localhost:8080/api/auth/login',
       { username, password } as LoginRequest,
       { withCredentials: true }
     ).pipe(
@@ -33,7 +33,7 @@ export class AuthService {
 
   logout(): Observable<any> {
     return this.http.post(
-      'http://localhost:8081/api/auth/logout',
+      'http://localhost:8080/api/auth/logout',
       {},
       { withCredentials: true }
     ).pipe(
@@ -45,13 +45,14 @@ export class AuthService {
   }
 
   checkAuth(): Observable<boolean> {
-    return this.http.get('/api/auth/me', { withCredentials: true }).pipe(
-      tap(() => this._isLoggedIn.set(true)),
-      map(() => true),
+    return this.http.get<{ authenticated: boolean }>('http://localhost:8080/api/auth/me', { withCredentials: true }).pipe(
+      tap(res => this._isLoggedIn.set(res.authenticated)),
+      map(res => res.authenticated),
       catchError(() => {
         this._isLoggedIn.set(false);
         return of(false);
       })
     );
   }
+
 }

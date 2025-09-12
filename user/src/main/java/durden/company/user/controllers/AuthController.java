@@ -1,16 +1,12 @@
 package durden.company.user.controllers;
 
+import durden.company.user.components.JwtCore;
 import durden.company.user.components.UserDetailsImpl;
-import durden.company.user.dto.Tokens;
 import durden.company.user.dto.LoginRequest;
-import durden.company.user.dto.UserDto;
 import durden.company.user.entities.RefreshToken;
 import durden.company.user.entities.User;
 import durden.company.user.services.AuthService;
-import durden.company.user.services.JwtUtils;
 import durden.company.user.services.RefreshTokenService;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseCookie;
@@ -31,7 +27,7 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final AuthService authService;
     private final RefreshTokenService refreshTokenService;
-    private final JwtUtils jwtUtils;
+    private final JwtCore jwtCore;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletResponse response) {
@@ -47,20 +43,20 @@ public class AuthController {
 
         ResponseCookie accessCookie = ResponseCookie.from("accessToken", accessToken)
                 .httpOnly(true)
-                .secure(true)
+                .secure(false)
                 .path("/")
                 .maxAge(60)
-                .sameSite("Strict")
+                .sameSite("Lax")
                 .build();
 
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getUsername());
 
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken.getToken())
                 .httpOnly(true)
-                .secure(true)
+                .secure(false)
                 .path("/api/auth/refresh")
                 .maxAge(604800)
-                .sameSite("Strict")
+                .sameSite("Lax")
                 .build();
 
         response.addHeader("Set-Cookie", accessCookie.toString());
@@ -89,10 +85,10 @@ public class AuthController {
 
         ResponseCookie accessCookie = ResponseCookie.from("accessToken", accessToken)
                 .httpOnly(true)
-                .secure(true)
+                .secure(false)
                 .path("/")
                 .maxAge(60)
-                .sameSite("Strict")
+                .sameSite("Lax")
                 .build();
 
         response.addHeader("Set-Cookie", accessCookie.toString());
@@ -111,18 +107,18 @@ public class AuthController {
 
         ResponseCookie clearAccessCookie = ResponseCookie.from("accessToken", "")
                 .httpOnly(true)
-                .secure(true)
+                .secure(false)
                 .path("/")
                 .maxAge(0)
-                .sameSite("Strict")
+                .sameSite("Lax")
                 .build();
 
         ResponseCookie clearRefreshCookie = ResponseCookie.from("refreshToken", "")
                 .httpOnly(true)
-                .secure(true)
+                .secure(false)
                 .path("/api/auth/refresh")
                 .maxAge(0)
-                .sameSite("Strict")
+                .sameSite("Lax")
                 .build();
 
         response.addHeader("Set-Cookie", clearAccessCookie.toString());
@@ -132,11 +128,11 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UserDto> me(@CookieValue(value = "JWT", required = false) String token) {
-        if (token == null || !jwtUtils.isValid(token)) {
-            return ResponseEntity.status(401).build();
-        }
-        return ResponseEntity.ok(jwtUtils.getUserFromToken(token));
+    public ResponseEntity<Map<String, Boolean>> me(@CookieValue(value = "accessToken", required = false) String token) {
+        boolean valid = token != null && jwtCore.validateToken(token);
+        Map<String, Boolean> response = Map.of("authenticated", valid);
+        return ResponseEntity.ok(response);
     }
+
 
 }

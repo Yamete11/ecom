@@ -14,6 +14,13 @@ export class ProductService {
   private http = inject(HttpClient);
 
   getAllProducts(): Observable<Product[]> {
-    return this.http.get<Product[]>('http://localhost:8080/products', { withCredentials: true });
+    return this.http.get<Product[]>('http://localhost:8080/api/products', { withCredentials: true });
+  }
+
+  addProductToCart(productId: number): void {
+    this.http.post('http://localhost:8080/api/products/add-to-cart', productId, {
+      withCredentials: true,
+      responseType: 'text'
+    }).subscribe();
   }
 }
